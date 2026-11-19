@@ -27,8 +27,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@hankei6km/notion4writer": "^0.0.1",
-    "@hankei6km/notion4writer-flavor-zenn": "^0.0.1",
+    "@hankei6km/notion4writer": "^0.0.2",
+    "@hankei6km/notion4writer-flavor-zenn": "^0.0.2",
     "@notionhq/client": "^5.31.1",
     "notion2content": "^0.8.0",
     "yargs": "^18.2.0"
