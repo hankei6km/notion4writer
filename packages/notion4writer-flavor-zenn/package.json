@@ -1,0 +1,43 @@
+{
+  "name": "@hankei6km/notion4writer-flavor-zenn",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hankei6km/notion4writer.git",
+    "directory": "packages/notion4writer-flavor-zenn"
+  },
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "npm run clean",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --test",
+    "test:coverage": "npm run test -- --experimental-test-coverage",
+    "lint:types": "tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@hankei6km/notion4writer": "^0.0.1",
+    "@types/hast": "^3.0.5",
+    "@types/mdast": "^4.0.4",
+    "@types/unist": "^3.0.3",
+    "hast-util-to-text": "^4.0.3",
+    "hastscript": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}
