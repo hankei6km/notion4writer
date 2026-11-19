@@ -1,0 +1,38 @@
+{
+  "name": "@hankei6km/notion4writer-cli",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",
+  "description": "A CLI for saving Notion pages as Markdown files. By combining Flavors, it generates Markdown files optimized for various services.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hankei6km/notion4writer.git",
+    "directory": "packages/notion4writer-cli"
+  },
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "notion4writer-cli": "dist/main.js"
+  },
+  "scripts": {
+    "prebuild": "npm run clean",
+    "build": "tsc -p tsconfig.build.json",
+    "page": "node src/main.ts page",
+    "prepage:js": "npm run build",
+    "page:js": "node src/main.ts page",
+    "preview": "zenn preview",
+    "test": "node --test",
+    "test:coverage": "npm run test -- --experimental-test-coverage",
+    "lint:types": "tsc --noEmit -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@hankei6km/notion4writer": "^0.0.1",
+    "@hankei6km/notion4writer-flavor-zenn": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "@types/yargs": "^17.0.35",
+    "typescript": "^7.0.2"
+  }
+}

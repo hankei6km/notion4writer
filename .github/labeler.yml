@@ -1,0 +1,15 @@
+'pkg: notion4writer':
+  - all:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'packages/notion4writer/**'
+'pkg: notion4writer-cli':
+  - all:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'packages/notion4writer-cli/**'
+'pkg: notion4writer-flavor-zenn':
+  - all:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'packages/notion4writer-flavor-zenn/**'

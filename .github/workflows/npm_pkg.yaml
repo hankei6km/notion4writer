@@ -1,0 +1,61 @@
+# https://docs.github.com/ja/actions/guides/publishing-nodejs-packages
+name: Node.js Package(npmjs)
+on:
+  release:
+    # draft から publish への対応でサンプルの created から変更
+    types:
+      - published
+
+permissions:
+  id-token: write  # Required for OIDC(https://docs.npmjs.com/trusted-publishers#disabling-provenance-generation)
+  contents: read
+
+jobs:
+  publish_to_npmjs:
+    if: ${{ github.event.release.prerelease ==  false }}
+    runs-on: ubuntu-latest
+    environment: npm_pkg
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # npm に公開するように .npmrc ファイルを設定する
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 'latest'
+          registry-url: 'https://registry.npmjs.org'
+
+      # https://docs.github.com/ja/free-pro-team@latest/actions/guides/caching-dependencies-to-speed-up-workflows
+      - name: Cache node modules
+        uses: actions/cache@v6
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm キャッシュファイルは Linux/macOS の「~/.npm」に保存される
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+
+      # Ensure npm 11.5.1 or later is installed
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Install modules
+        run: npm ci
+
+      - name: Build
+        # cli のビルドの前に他のパッケージのビルドが必要
+        run: |
+          npm run --workspace packages/notion4writer build
+          npm run --workspace packages/notion4writer-flavor-zenn build
+          npm run --workspace packages/notion4writer-cli build
+
+      - name: Run check types
+        run: npm run --workspace packages --if-present lint:types
+
+      - name: Run tests
+        run: npm run --workspace packages --if-present test
+
+      - run: npm stage publish --workspace packages --if-present --access public
