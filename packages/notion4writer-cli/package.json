@@ -12,7 +12,7 @@
   "type": "module",
   "main": "index.js",
   "bin": {
-    "notion4writer-cli": "dist/main.js"
+    "notion4writer": "dist/main.js"
   },
   "scripts": {
     "prebuild": "npm run clean",

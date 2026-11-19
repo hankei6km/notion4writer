@@ -56,7 +56,7 @@ npm install -g @hankei6km/notion4writer-cli
 ## 使い方
 
 ```console
-$ notion4writer-cli page --help
+$ notion4writer page --help
 
 Fetch pages from Notion database
 
@@ -107,7 +107,7 @@ Options:
 Notion 側データベースで Zenn 用記事ページを編集した後に、以下のコマンドを実行してページを取得する。これにより、直近で編集されたページ 1 件が取得される。
 
 ```console
-notion4writer-cli page
+notion4writer page
 ```
 
 > [NOTE]
@@ -120,7 +120,7 @@ notion4writer-cli page
 例: スラッグが `my-article` のページを取得する場合
 
 ```console
-notion4writer-cli page --filter-slug my-article
+notion4writer page --filter-slug my-article
 ```
 
 また、タイトルでフィルタをかけることも可能。
@@ -128,7 +128,7 @@ notion4writer-cli page --filter-slug my-article
 例: タイトルに `My Article` を含むページを取得する場合
 
 ```console
-notion4writer-cli page --filter-title "My Article"
+notion4writer page --filter-title "My Article"
 ```
 
 > [NOTE]
