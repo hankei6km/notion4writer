@@ -2,8 +2,8 @@
   "name": "notion4writer",
   "workspaces": [
     "packages/notion4writer",
-    "packages/notion4writer-cli",
-    "packages/notion4writer-flavor-zenn"
+    "packages/notion4writer-flavor-zenn",
+    "packages/notion4writer-cli"
   ],
   "private": true,
   "license": "MIT",

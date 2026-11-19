@@ -43,11 +43,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        # cli のビルドの前に他のパッケージのビルドが必要
-        run: |
-          npm run --workspace packages/notion4writer build
-          npm run --workspace packages/notion4writer-flavor-zenn build
-          npm run --workspace packages/notion4writer-cli build
+        run: npm run --workspace packages --if-present build
 
       - name: Run check types
         run: npm run --workspace packages --if-present lint:types
