@@ -1,6 +1,6 @@
 {
   "name": "@hankei6km/notion4writer-cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",
   "description": "A CLI for saving Notion pages as Markdown files. By combining Flavors, it generates Markdown files optimized for various services.",
@@ -27,8 +27,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@hankei6km/notion4writer": "^0.0.2",
-    "@hankei6km/notion4writer-flavor-zenn": "^0.0.2",
+    "@hankei6km/notion4writer": "^0.0.3",
+    "@hankei6km/notion4writer-flavor-zenn": "^0.0.3",
     "@notionhq/client": "^5.31.1",
     "notion2content": "^0.8.0",
     "yargs": "^18.2.0"

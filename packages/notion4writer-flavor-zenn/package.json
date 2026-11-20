@@ -1,6 +1,6 @@
 {
   "name": "@hankei6km/notion4writer-flavor-zenn",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "author": "hankei6km <hankei6km@gmail.com> (https://github.com/hankei6km)",
   "description": "",
@@ -29,7 +29,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@hankei6km/notion4writer": "^0.0.2",
+    "@hankei6km/notion4writer": "^0.0.3",
     "@hankei6km/unist-util-splice-children": "^0.0.2",
     "@types/hast": "^3.0.5",
     "@types/mdast": "^4.0.4",
