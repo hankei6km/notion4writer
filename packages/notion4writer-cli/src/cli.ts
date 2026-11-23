@@ -83,6 +83,17 @@ export class CliFiles extends BaseFiles<Buffer> {
             throw new Error(`Invalid URL: ${url}`)
         }
     }
+    relativePath(path: string): string {
+        // base の外に出ていないかのチェックはしていない
+        // 各ファイルの path は
+        // - slug(basename)
+        // - hash
+        // - 連番
+        // - 拡張子(extname)
+        // を組み合わせているので、外へ出ることはないはず。
+        // と、思いたい。
+        return this.path.relative(this.base, path)
+    }
     pageFileName(pathExt: [string[], string]): string {
         return this.path.format({ name: this.path.join(this.base, ...pathExt[0]), ext: pathExt[1] })
     }

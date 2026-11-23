@@ -31,6 +31,9 @@ describe('LocalImage', () => {
         fileNameDigest(url: string, abbrev?: number): string {
             throw new Error('Method not mocked.')
         }
+        relativePath(path: string): string {
+            throw new Error('Method not mocked.')
+        }
         pageFileName(pathExt: [string[], string]): string {
             throw new Error('Method not mocked.')
         }
