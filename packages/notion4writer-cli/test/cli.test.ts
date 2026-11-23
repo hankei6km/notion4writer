@@ -140,7 +140,8 @@ describe('pageCmd', () => {
             format: t.mock.fn<typeof nodePath.format>((...args) => nodePath.format(...args)),
             posix: {
                 resolve: t.mock.fn<typeof nodePath.posix.resolve>((...args) => nodePath.posix.resolve(...args)),
-            }
+            },
+            relative: t.mock.fn<typeof nodePath.relative>((...args) => nodePath.relative(...args)),
         }
         const mockFileHandleMd = {
             write: t.mock.fn((a: Buffer) => Promise.resolve()),
@@ -244,6 +245,10 @@ describe('pageCmd', () => {
         })
         assert.strictEqual(mockUrl.mock.calls[0].arguments[0], 'https://example.com/page1-slug')
         assert.strictEqual(mockPath.basename.mock.calls[0].arguments[0], '/page1-slug')
+        assert.deepStrictEqual(mockPath.relative.mock.calls[0].arguments, ['/path/to/base', nodePath.join('/path/to/base', dirs.images, 'page1-slug', 'page1-slug-1-123456AB.jpg')])
+        assert.deepStrictEqual(mockPath.relative.mock.calls[1].arguments, ['/path/to/base', nodePath.join('/path/to/base', dirs.images, 'page1-slug', 'page1-slug-2-123456AB.jpg')])
+        assert.deepStrictEqual(mockPath.relative.mock.calls[2].arguments, ['/path/to/base', nodePath.join('/path/to/base', dirs.images, 'page1-slug', 'page1-slug-3-123456AB.jpg')])
+        assert.deepStrictEqual(mockPath.relative.mock.calls[3].arguments, ['/path/to/base', nodePath.join('/path/to/base', dirs.images, 'page1-slug', 'page1-slug-4-123456AB.jpg')])
         assert.deepStrictEqual(mockFs.mkdir.mock.calls.map(call => call.arguments), [
             [nodePath.join('/path/to/base', dirs.pages), { recursive: true }],
             [nodePath.join('/path/to/base', dirs.images, 'page1-slug'), { recursive: true }],
