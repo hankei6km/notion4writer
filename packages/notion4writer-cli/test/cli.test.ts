@@ -1,11 +1,13 @@
 import * as nodePath from 'node:path'
 import * as nodeFs from 'node:fs/promises'
+import { PassThrough } from 'stream'
 import * as nodeCrypto from 'node:crypto'
 import { describe, it, mock } from 'node:test'
 import assert from 'node:assert/strict'
 import { Client as NotionClient } from '@notionhq/client'
 import { CliClient, CliFiles, CliRequester, CliSlug, pageCmd } from '../src/cli.ts'
 import { InitFlavor } from '@hankei6km/notion4writer-flavor-zenn'
+import { EOL } from 'node:os'
 
 
 describe('CliSlug', () => {
@@ -49,7 +51,15 @@ describe('pageCmd', () => {
             { type: 'text' }
         ) as any
     }
+
     it('should fetch and process page blocks correctly', async (t) => {
+        const stdout = new PassThrough()
+        const stderr = new PassThrough()
+        let outData = ''
+        stdout.on('data', (d) => (outData = outData + d))
+        let errData = ''
+        stderr.on('data', (d) => (errData = errData + d))
+
         t.mock.timers.enable({ apis: ['Date'] })
         t.mock.timers.tick(1000 * 60 * 60 * 24)
 
@@ -133,7 +143,7 @@ describe('pageCmd', () => {
         })
         const mockUrl = t.mock.fn<typeof URL>(URL)
         const mockPath = {
-            basename: t.mock.fn<typeof nodePath.basename>(() => 'page1-slug'),
+            basename: t.mock.fn<typeof nodePath.basename>((...args) => nodePath.basename(...args)),
             extname: t.mock.fn<typeof nodePath.extname>((...args) => nodePath.extname(...args)),
             resolve: t.mock.fn<typeof nodePath.resolve>((...args) => nodePath.resolve(...args)),
             join: t.mock.fn<typeof nodePath.join>((...args) => nodePath.join(...args)),
@@ -212,7 +222,9 @@ describe('pageCmd', () => {
             },
             addFilter: (filter) => {
                 filter.recentFilter(60 * 1000 * 3)
-            }
+            },
+            stdout,
+            stderr
         })
 
         assert.deepStrictEqual(mockedQuery.mock.calls.map(call => call.arguments)[0][0]?.filter, {
@@ -300,5 +312,256 @@ test1
             ['https://example.com/image2.jpg'],
             ['https://example.com/image4.jpg'], // 存在確認ののためにファイル名組み立て用の hash 化は実施される
         ])
+        assert.strictEqual(outData, '')
+        assert.strictEqual(errData, '')
+    })
+
+    it('should print result items when printResultItems is true', async (t) => {
+        const stdout = new PassThrough()
+        const stderr = new PassThrough()
+        let outData = ''
+        stdout.on('data', (d) => (outData = outData + d))
+        let errData = ''
+        stderr.on('data', (d) => (errData = errData + d))
+
+        t.mock.timers.enable({ apis: ['Date'] })
+        t.mock.timers.tick(1000 * 60 * 60 * 24)
+
+        const dirs = { pages: 'articles', images: 'images' }
+        const notionClient = new NotionClient()
+        const mockedQuery = t.mock.method(notionClient.dataSources, 'query', async () => {
+            return {
+                results: [
+                    {
+                        properties: {
+                            URL: { type: 'url', url: 'https://example.com/page1-slug' },
+                            タグ: {
+                                type: 'multi_select', multi_select: [
+                                    { id: '', name: 'zenn:type:idea', color: 'default' },
+                                    { id: '', name: 'zenn:topics:test', color: 'default' }
+                                ]
+                            }
+                        },
+                        object: 'page',
+                        id: 'page1',
+                        parent: { type: 'database_id', database_id: 'db1' },
+                        created_time: '2024-06-01T00:00:00.000Z',
+                        last_edited_time: '2024-06-02T00:00:00.000Z',
+                        in_trash: false,
+                        is_archived: false,
+                        is_locked: false,
+                        archived: false,
+                        url: 'https://example.com/page1',
+                        public_url: null,
+                        icon: { type: 'emoji', emoji: '📄' },
+                        cover: null,
+                        created_by: { object: 'user', id: 'user1' },
+                        last_edited_by: { object: 'user', id: 'user2' },
+                    },
+                    {
+                        properties: {
+                            URL: { type: 'url', url: 'https://example.com/page2-slug' },
+                            タグ: {
+                                type: 'multi_select', multi_select: [
+                                    { id: '', name: 'zenn:type:idea', color: 'default' },
+                                    { id: '', name: 'zenn:topics:test', color: 'default' }
+                                ]
+                            }
+                        },
+                        object: 'page',
+                        id: 'page2',
+                        parent: { type: 'database_id', database_id: 'db1' },
+                        created_time: '2024-06-01T00:00:00.000Z',
+                        last_edited_time: '2024-06-02T00:00:00.000Z',
+                        in_trash: false,
+                        is_archived: false,
+                        is_locked: false,
+                        archived: false,
+                        url: 'https://example.com/page2',
+                        public_url: null,
+                        icon: { type: 'emoji', emoji: '📄' },
+                        cover: null,
+                        created_by: { object: 'user', id: 'user1' },
+                        last_edited_by: { object: 'user', id: 'user2' },
+                    },
+                ]
+            }
+        })
+        t.mock.method(notionClient.blocks.children, 'list', async () => {
+            return {
+                results: [
+                    {
+                        object: 'block',
+                        id: 'paragraph-id',
+                        type: 'paragraph',
+                        paragraph: {
+                            rich_text: [getMockRichTextItem('test1')]
+                        }
+                    },
+                    {
+                        object: 'block',
+                        id: 'paragraph-image',
+                        type: 'image',
+                        image: {
+                            type: 'external',
+                            external: { url: 'https://example.com/image1.jpg' },
+                            caption: [getMockRichTextItem('image1-caption')]
+                        }
+                    },
+                    {
+                        object: 'block',
+                        id: 'paragraph-image-2',
+                        type: 'image',
+                        image: {
+                            type: 'external',
+                            external: { url: 'https://example.com/image2.jpg' },
+                            caption: [getMockRichTextItem('image2-caption')]
+                        }
+                    },
+                    {
+                        object: 'block',
+                        id: 'paragraph-image-4',
+                        type: 'image',
+                        image: {
+                            type: 'external',
+                            external: { url: 'https://example.com/image4.jpg' },
+                            caption: []
+                        }
+                    }
+                ],
+            }
+        })
+        const mockUrl = t.mock.fn<typeof URL>(URL)
+        const mockPath = {
+            basename: t.mock.fn<typeof nodePath.basename>((...args) => nodePath.basename(...args)),
+            extname: t.mock.fn<typeof nodePath.extname>((...args) => nodePath.extname(...args)),
+            resolve: t.mock.fn<typeof nodePath.resolve>((...args) => nodePath.resolve(...args)),
+            join: t.mock.fn<typeof nodePath.join>((...args) => nodePath.join(...args)),
+            format: t.mock.fn<typeof nodePath.format>((...args) => nodePath.format(...args)),
+            posix: {
+                resolve: t.mock.fn<typeof nodePath.posix.resolve>((...args) => nodePath.posix.resolve(...args)),
+            },
+            relative: t.mock.fn<typeof nodePath.relative>((...args) => nodePath.relative(...args)),
+        }
+        const mockFileHandleMd = {
+            write: t.mock.fn((a: Buffer) => Promise.resolve()),
+            close: t.mock.fn(() => Promise.resolve())
+        }
+        const mockFileHandleImage = {
+            write: t.mock.fn((a: Buffer) => Promise.resolve()),
+            close: t.mock.fn(() => Promise.resolve())
+        }
+        const mockFs = {
+            mkdir: t.mock.fn<typeof nodeFs.mkdir>(),
+            readdir: t.mock.fn<typeof nodeFs.readdir>(
+                (() => {
+                    const ite = (async function* () {
+                        yield [
+                            // 既に存在している画像ファイル
+                            'page1-slug-3-123456AB.jpg',
+                            'page1-slug-4-123456AB.jpg'
+                        ]
+                        yield [
+                            // 存在している画像ファイルは無し
+                        ]
+                    })()
+                    return async (_a) => Promise.resolve<any>((await ite.next()).value)
+                })()
+            ),
+            unlink: t.mock.fn<typeof nodeFs.unlink>(),
+            open: t.mock.fn<typeof nodeFs.open>((fname) => nodePath.extname(fname as string) === '.md' ? Promise.resolve(mockFileHandleMd as unknown as ReturnType<typeof nodeFs.open>) : Promise.resolve(mockFileHandleImage as unknown as ReturnType<typeof nodeFs.open>)),
+        }
+
+        const mockHashDigest = t.mock.fn(() => '123456ABCDE')
+        const mockHashUpdate =
+            t.mock.fn(() => ({ digest: mockHashDigest }))
+        const mockCrypto = {
+            createHash: t.mock.fn<typeof nodeCrypto.createHash>(() => ({
+                update: mockHashUpdate
+            } as unknown as ReturnType<typeof nodeCrypto.createHash>)),
+        }
+
+        const mockResponse = {
+            'url': 'https://example.com/image1.jpg',
+            'ok': true,
+            'status': 200,
+            'statusText': 'OK',
+            'body': (async function* () {
+                yield Buffer.from('image1.jpg data')
+            })() as unknown as ReadableStream,
+        }
+        const mockFetch = t.mock.fn<typeof fetch>(() => Promise.resolve(mockResponse as unknown as Response))
+
+        const client = new CliClient(notionClient)
+        const slug = new CliSlug(mockUrl, mockPath as unknown as typeof nodePath, 'URL')
+        const files = new CliFiles(
+            mockUrl,
+            mockFs as unknown as typeof nodeFs,
+            mockPath as unknown as typeof nodePath,
+            mockCrypto as unknown as typeof nodeCrypto,
+            '/path/to/base'
+        )
+        const requester = new CliRequester(mockFetch)
+        await pageCmd({
+            client,
+            slug,
+            data_source_id: 'data-source-id',
+            files,
+            requester,
+            flavor: {
+                ...(new InitFlavor({
+                    propsMapping: {
+                        title: '名前',
+                        tags: 'タグ',
+                        slug: 'slug'
+                    },
+                    requester
+                })).flavor,
+            },
+            addFilter: (filter) => {
+                filter.recentFilter(60 * 1000 * 3)
+            },
+            limit: 2,
+            printResultItems: true,
+            stdout,
+            stderr
+        })
+
+        const resultItems = outData.split(EOL).filter(line => line).map(line => JSON.parse(line))
+        console.log(resultItems.map(item => JSON.stringify(item)))
+        assert.deepStrictEqual(resultItems, [{
+            id: 'page1',
+            meta: { emoji: '📄', type: 'idea', topics: ['test'], published: false },
+            slug: 'page1-slug',
+            content: {
+                page: { path: 'articles/page1-slug.md' },
+                image: {
+                    written: [
+                        'images/page1-slug/page1-slug-1-123456AB.jpg',
+                        'images/page1-slug/page1-slug-2-123456AB.jpg'
+                    ],
+                    existing: ['images/page1-slug/page1-slug-3-123456AB.jpg'],
+                    removed: ['images/page1-slug/page1-slug-4-123456AB.jpg']
+                }
+            }
+        }, {
+            id: 'page2',
+            meta: { emoji: '📄', type: 'idea', topics: ['test'], published: false },
+            slug: 'page2-slug',
+            content: {
+                page: { path: 'articles/page2-slug.md' },
+                image: {
+                    // 存在しているファイルはなかったので、written のみ
+                    written: [
+                        'images/page2-slug/page2-slug-1-123456AB.jpg',
+                        'images/page2-slug/page2-slug-2-123456AB.jpg',
+                        'images/page2-slug/page2-slug-3-123456AB.jpg',
+                    ],
+                    existing: [],
+                    removed: []
+                }
+            }
+        }])
+        assert.strictEqual(errData, '')
     })
 })

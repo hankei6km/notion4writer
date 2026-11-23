@@ -99,6 +99,12 @@ yargs(hideBin(process.argv))
                     describe: 'Base directory for storing files',
                     demandOption: true,
                     default: '.'
+                })
+                .option('print-result-items', {
+                    type: 'boolean',
+                    describe: 'Print result items',
+                    demandOption: false,
+                    default: false
                 }),
         async (argv) => {
             const { InitFlavor, defaultZennFlavorHandler, Meta, Filter } = await import('@hankei6km/notion4writer-flavor-zenn')
@@ -129,7 +135,10 @@ yargs(hideBin(process.argv))
                         filterTitleOp: argv['filter-title-op'],
                         filterRecenting: argv['filter-recenting']
                     })
-                }
+                },
+                printResultItems: argv['print-result-items'],
+                stdout: process.stdout,
+                stderr: process.stderr,
             })
         }
     )

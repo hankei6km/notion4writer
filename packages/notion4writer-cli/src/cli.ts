@@ -1,5 +1,7 @@
 import type * as nodePath from 'node:path'
 import type * as nodeFs from 'node:fs/promises'
+import { Writable } from 'node:stream'
+import { EOL } from 'node:os'
 import type * as nodeCrypto from 'node:crypto'
 import type { PropsItem } from 'notion2content'
 import { Client as NotionClient } from '@notionhq/client'
@@ -172,6 +174,11 @@ export class CliRequester extends BaseRequester<Buffer> {
 }
 
 
-export async function pageCmd(options: PageOptions): Promise<void> {
-    await page(options)
+export async function pageCmd(options: PageOptions & { printResultItems?: boolean, stdout: Writable, stderr: Writable }): Promise<void> {
+    for await (const item of page(options)) {
+        if (options.printResultItems) {
+            options.stdout.write(JSON.stringify(item))
+            options.stdout.write(EOL)
+        }
+    }
 }

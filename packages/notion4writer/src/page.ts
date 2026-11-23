@@ -12,10 +12,11 @@ import { gfmFootnoteToMarkdown } from 'mdast-util-gfm-footnote'
 import { toContent, Format } from 'notion2content'
 import { removeToc } from './lib/remove-toc.ts'
 import { normalizeParagraph } from './lib/normalize-paragraph.ts'
-import { LocalImage } from './lib/local-image.ts'
+import { LocalImage, type LocalImageResult } from './lib/local-image.ts'
 import { BaseRequester } from './utils/requester.ts'
 import { BaseFiles } from './utils/files.ts'
 import { BaseInitFlavor } from './utils/flavor.ts'
+import type { BaseMetaHandler } from './utils/meta.ts'
 
 export type PageOptions = {
     client: Client,
@@ -28,7 +29,20 @@ export type PageOptions = {
     addFilter: (filter: BaseFilter) => void
 }
 
-export async function page({
+export type PageResultItem = {
+    id: string,
+    meta: ReturnType<BaseMetaHandler['handle']>
+    slug: string
+    content: {
+        page: {
+            path: string,
+            body?: string
+        },
+        image: LocalImageResult
+    }
+}
+
+export async function* page({
     client,
     slug,
     data_source_id,
@@ -37,7 +51,7 @@ export async function page({
     requester,
     flavor,
     addFilter
-}: PageOptions): Promise<void> {
+}: PageOptions): AsyncGenerator<PageResultItem, void, unknown> {
     const fllter = (flavor.filter)()
     addFilter(fllter)
     const ite = toContent(client, {
@@ -100,13 +114,29 @@ export async function page({
             const ite = (async function* () {
                 yield markdown // とりあえず、どかっと書き出す
             })()
+            const pageFilePath = files.pageFileName(resolver.pageFileName(dirs.pages, slugValue, 'md'))
+            let imageResult: LocalImageResult = { written: [], existing: [], removed: [] }
             await Promise.all([
                 (async () => {
                     await files.setupDir([dirs.pages])
-                    await files.write(files.pageFileName(resolver.pageFileName(dirs.pages, slugValue, 'md')), ite)
+                    await files.write(pageFilePath, ite)
                 })(),
-                localImage.syncImageFiles()
+                (async () => {
+                    imageResult = await localImage.syncImageFiles()
+                })()
             ])
+            yield {
+                id: c.id,
+                meta: metaData,
+                slug: slugValue,
+                content: {
+                    page: {
+                        path: files.relativePath(pageFilePath),
+                        // body: markdown // あとでオプションで出力させるかも。markdown 変数を直接使うと ite との関係があれなんだよなと思ったもする。
+                    },
+                    image: imageResult
+                },
+            }
         }
 
     }

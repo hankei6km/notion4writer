@@ -58,32 +58,35 @@ npm install -g @hankei6km/notion4writer-cli
 ```console
 $ notion4writer page --help
 
+notion4writer page
+
 Fetch pages from Notion database
 
 Options:
-  --version           Show version number                              [boolean]
-  --help              Show help                                        [boolean]
-  --auth              Notion integration token               [string] [required]
-  --data-source-id    Notion data source ID                  [string] [required]
-  --limit             Limit number of pages to fetch       [number] [default: 1]
-  --title-prop-name   Notion title property name
+  --version             Show version number                            [boolean]
+  --help                Show help                                      [boolean]
+  --auth                Notion integration token             [string] [required]
+  --data-source-id      Notion data source ID                [string] [required]
+  --limit               Limit number of pages to fetch     [number] [default: 1]
+  --title-prop-name     Notion title property name
                                           [string] [required] [default: "Title"]
-  --tags-prop-name    Notion tags property name
+  --tags-prop-name      Notion tags property name
                                            [string] [required] [default: "Tags"]
-  --slug-prop-name    Notion slug property name
+  --slug-prop-name      Notion slug property name
                                             [string] [required] [default: "URL"]
-  --filter-slug       Filter by slug                                    [string]
-  --filter-slug-op    Filter by slug operation
+  --filter-slug         Filter by slug                                  [string]
+  --filter-slug-op      Filter by slug operation
   [string] [choices: "equals", "does_not_equal", "contains", "does_not_contain",
                                  "starts_with", "ends_with"] [default: "equals"]
-  --filter-title      Filter by title                                   [string]
-  --filter-title-op   Filter by title operation
+  --filter-title        Filter by title                                 [string]
+  --filter-title-op     Filter by title operation
   [string] [choices: "equals", "does_not_equal", "contains", "does_not_contain",
                                "starts_with", "ends_with"] [default: "contains"]
-  --filter-recenting  Specify the time range from the current time in seconds
+  --filter-recenting    Specify the time range from the current time in seconds
                                                                         [number]
-  --base-dir          Base directory for storing files
+  --base-dir            Base directory for storing files
                                               [string] [required] [default: "."]
+  --print-result-items  Print result items            [boolean] [default: false]
 ```
 
 ### コネクションの指定
@@ -133,6 +136,21 @@ notion4writer page --filter-title "My Article"
 
 > [NOTE]
 > 対象となるページが複数存在する場合、直近で編集されたページ 1 件のみが取得される。
+
+### 結果の表示
+
+オプション `--print-result-items` を指定すると、取得したページを生成した結果の情報が NDJSON 形式で標準出力に表示される。
+
+例:
+
+```console
+notion4writer page --print-result-items
+```
+
+```json
+{"id":"1234-XXXX-XXXX-XXXX","meta":{"title":"Test Page1","emoji":"📄","type":"idea","topics":["test"],"published":false},"slug":"page1","content":{"page":{"path":"articles/page1.md"},"image":{"written":["images/page1/page1-1-123456AB.jpg","images/page1/page1-2-123456AB.jpg"],"existing":["images/page1/page1-3-123456AB.jpg"],"removed":["images/page1/page1-4-123456AB.jpg"]}}}'
+{"id":"5678-XXXX-XXXX-XXXX","meta":{"title":"Test Page2","emoji":"📄","type":"idea","topics":["test"],"published":false},"slug":"page2","content":{"page":{"path":"articles/page2.md"},"image":{"written":["images/page2/page2-1-123456AB.jpg","images/page2/page2-2-123456AB.jpg","images/page2/page2-3-123456AB.jpg"],"existing":[],"removed":[]}}}
+```
 
 ## License
 
