@@ -2,6 +2,7 @@ export abstract class BaseFiles<TChunk extends string | Uint8Array = string | Ui
     // path
     abstract fileExt(url: string): string
     abstract fileNameDigest(url: string, abbrev?: number): string
+    abstract relativePath(path: string): string
     abstract pageFileName(pathExt: [string[], string]): string
     abstract imageFilePath(pathExt: [string[], string]): string
     abstract imageSrcPath(pathExt: [string[], string]): string
