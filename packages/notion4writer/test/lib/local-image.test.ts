@@ -78,6 +78,10 @@ describe('LocalImage', () => {
         const mockImageFilePath = t.mock.method(testFiles, 'imageFilePath', (pathExt: [string[], string]) => {
             return `mocked-path-${pathExt[0].join('-')}-${pathExt[1]}`
         })
+        // relafivePath はコールされない。されたらおかしい。
+        //const mockRelativePath = t.mock.method(testFiles, 'relativePath', (path: string) => {
+        //    return `mocked-relative-path-${path}`
+        //})
         const mockImageSrcPath = t.mock.method(testFiles, 'imageSrcPath', (pathExt: [string[], string]) => {
             return `mocked-src-path-${pathExt[0].join('-')}-${pathExt[1]}`
         })
@@ -140,6 +144,9 @@ describe('LocalImage', () => {
         const mockSetupDir = t.mock.method(testFiles, 'setupDir', async (dir: string[], base?: string) => {
             return 'mocked-setup-dir'
         })
+        const mockRelativePath = t.mock.method(testFiles, 'relativePath', (path: string) => {
+            return `mocked-relative-path-${path}`
+        })
         const mockImageFileList = t.mock.method(testFiles, 'imageFileList', async (slug: string) => {
             return ['mocked-path-test-slug-1-image1.png-mocked-digest', 'mocked-path-test-slug-3-image3.png-mocked-digest']
         })
@@ -169,7 +176,12 @@ describe('LocalImage', () => {
             }
         }
         const localImage = new TestLocalImage({ images: dirs.images, slug: slugValue, requester, files: testFiles, pathResolvers: testPathResolvers })
-        await localImage.syncImageFiles()
+        const result = await localImage.syncImageFiles()
+        assert.deepStrictEqual(result, {
+            written: ['mocked-relative-path-mocked-path-test-slug-2-image2.png-mocked-digest'],
+            existing: ['mocked-relative-path-mocked-path-test-slug-1-image1.png-mocked-digest'],
+            removed: ['mocked-relative-path-mocked-path-test-slug-3-image3.png-mocked-digest']
+        })
         assert.deepStrictEqual(mockSetupDir.mock.calls.map(call => call.arguments), [
             [[dirs.images, slugValue]],
         ])

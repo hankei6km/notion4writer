@@ -31,6 +31,13 @@ export type LocalsImageOptions = {
     files: BaseFiles
     requester: BaseRequester
 }
+
+export type LocalImageResult = {
+    written: string[]
+    existing: string[]
+    removed: string[]
+}
+
 export class LocalImage {
     protected options: LocalsImageOptions
     protected imageList: LocalImageListItem[] = []
@@ -72,7 +79,10 @@ export class LocalImage {
             }
         })
     }
-    async syncImageFiles(): Promise<void> {
+    async syncImageFiles(): Promise<LocalImageResult> {
+        const written: string[] = []
+        const existing: string[] = []
+        const removed: string[] = []
         const options = this.options
         const imagesDir = options.pathResolvers.pageImageDirName(options.images, options.slug)
         const currentImageList = await options.files.imageFileList(imagesDir)
@@ -81,14 +91,19 @@ export class LocalImage {
         for await (const item of this.imageList) { // ソートされてないので比較は毎回全件の include で行う
             if (!(currentImageList.includes(item.path))) {
                 await options.files.write(item.path, options.requester.media(item.url))
+                written.push(options.files.relativePath(item.path))
+            } else {
+                existing.push(options.files.relativePath(item.path))
             }
         }
         // ローカルで利用されない画像の削除
         for await (const filePath of currentImageList) {
             if (!(this.imageList.map(item => item.path).includes(filePath))) {
                 await options.files.removeFilePath(filePath)
+                removed.push(options.files.relativePath(filePath))
             }
         }
+        return { written, existing, removed }
     }
 
 }
